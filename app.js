@@ -67,3 +67,14 @@ app.get('/contact', async (req, res) => {
     })
 })
 
+
+//detail contact
+app.get('/contact/:phoneNumber', async (req, res) => {
+
+    const contact = await Contact.findOne({phoneNumber: req.params.phoneNumber})
+    res.render('detail', {
+        title: 'Detail Contact',
+        contact,
+        phoneNumber: req.params.phoneNumber
+    })
+})
