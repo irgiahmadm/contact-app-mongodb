@@ -13,6 +13,11 @@ const port = 3000
 //validation
 const { body, validationResult, check } = require('express-validator')
 
+const methodOverride = require('method-override')
+
+//setup methodOverride
+app.use(methodOverride('_method'))
+
 //setup EJS
 app.set('view engine', 'ejs')
 app.use(expressLayouts)
@@ -104,6 +109,37 @@ app.post('/contact', [
     }
 })
 
+//delete contact
+/* app.get('/contact/delete/:phoneNumber', async (req, res) => {
+    const contact = await Contact.findOne({phoneNumber: req.params.phoneNumber})
+    if (!contact) {
+        res.status(404)
+        res.send('<h1>404</h1>')
+    } else {
+        Contact.deleteOne({_id: contact._id}).then((result) =>{
+            req.flash('msg', 'Contact is succesfully deleted!')
+            res.redirect('/contact')
+        })
+    }
+}) */
+
+app.delete('/contact', (req, res) => {
+    Contact.deleteOne({phoneNumber: req.body.phoneNumber}).then((result) =>{
+        req.flash('msg', 'Contact is succesfully deleted!')
+        res.redirect('/contact')
+    })
+})
+
+//form edit contact
+app.get('/contact/edit/:phoneNumber', async (req, res) => {
+    const contact = await Contact.findOne({phoneNumber: req.params.phoneNumber})
+    res.render('edit-contact', {
+        title: 'Edit Contact Form',
+        contact
+    })
+})
+
+
 //detail contact
 app.get('/contact/:phoneNumber', async (req, res) => {
     const contact = await Contact.findOne({phoneNumber: req.params.phoneNumber})
@@ -112,4 +148,41 @@ app.get('/contact/:phoneNumber', async (req, res) => {
         contact,
         phoneNumber: req.params.phoneNumber
     })
+})
+
+//edit contact
+app.put('/contact',  [
+    check('email', 'Email is invalid').isEmail(),
+    check('phoneNumber', "Phone Number is Invalid").isMobilePhone('id-ID'),
+    body('phoneNumber').custom(async (value, { req }) => {
+        const duplicate = await Contact.findOne({ name: value})
+        if (value !== req.body.oldPhoneNumber && duplicate) {
+            throw new Error('Phone Number is exist')
+        }
+        return true
+    })
+],(req, res) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        res.render('edit-contact', {
+            title: 'Form Edit Data Contact',
+            errors: errors.array(),
+            contact: req.body
+        })
+    } else {
+        Contact.updateOne(
+            {_id: req.body._id}, 
+            {
+                $set: {
+                    name: req.body.name,
+                    email: req.body.email,
+                    phoneNumber: req.body.phoneNumber
+                }
+            }
+        ).then((result)=>{
+            req.flash('msg', 'Contact is succesfully updated!')
+            res.redirect('/contact')
+        })
+        
+    }
 })

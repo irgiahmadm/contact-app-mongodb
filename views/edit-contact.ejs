@@ -11,8 +11,9 @@
                     </ul>
                 </div>
             <% } %>
-            <form method="POST" action="/contact/edit">
-                <input type="hidden" name="oldPhoneNumber" value="<%= contact.oldPhoneNumber || contact.phoneNumber %>">
+            <form method="POST" action="/contact?_method=PUT">
+                <input type="hidden" name="_id" value="<%= contact._id %>"/>
+                <input type="hidden" name="oldPhoneNumber" value="<%= contact.oldPhoneNumber || contact.phoneNumber %>"/>
                 <div class="mb-3">
                     <label for="name" class="form-label">Fullname</label>
                     <input type="text" class="form-control" id="name" name="name" value="<%= contact.name %>" required>

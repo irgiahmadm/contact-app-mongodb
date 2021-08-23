@@ -15,7 +15,10 @@
                             <h6 class="card-subtitle mb-2 text-muted">Phone Number: <%= contact.phoneNumber %> </h6>
                             <p class="card-text">E-mail: <%= contact.email %> </p>
                             <a href="/contact/edit/<%= contact.phoneNumber %>" class="btn btn-primary badge">Edit</a>
-                            <a href="/contact/delete/<%= contact.phoneNumber %>" class="btn btn-danger badge" onclick="return confirm('yakin?')">Hapus</a>
+                            <form action="/contact?_method=DELETE" method="post" class="d-inline">
+                                <input type="hidden" name="phoneNumber" value=" <%= contact.phoneNumber %>">
+                                <button type="submit" class="btn btn-danger badge" onclick="return confirm('Are you sure you want to delete?')">Delete</button>
+                            </form>
                             <a href="/contact" class="card-link d-block mt-3">&laquo; Contact List</a>
                         </div>
                     </div>
