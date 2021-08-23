@@ -10,6 +10,9 @@ const Contact = require('./model/contact')
 const app = express()
 const port = 3000
 
+//validation
+const { body, validationResult, check } = require('express-validator')
+
 //setup EJS
 app.set('view engine', 'ejs')
 app.use(expressLayouts)
@@ -67,10 +70,42 @@ app.get('/contact', async (req, res) => {
     })
 })
 
+//form add contact
+app.get('/contact/add', (req, res) => {
+    res.render('add-contact', {
+        title: 'Add Contact Form'
+    })
+})
+
+//add contact data
+app.post('/contact', [
+    check('email', 'Email is invalid').isEmail(),
+    check('phoneNumber', "Phone Number is Invalid").isMobilePhone('id-ID'),
+    body('phoneNumber').custom(async (value) => {
+        const duplicate = await Contact.findOne({phoneNumber: value})
+        if (duplicate) {
+            throw new Error('Phone Number is exist')
+        }
+        return true
+    })
+], (req, res) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        res.render('add-contact', {
+            title: 'Form Data Contact',
+            errors: errors.array()
+        })
+    } else {
+        Contact.insertMany(req.body, (err, result) => {
+            req.flash('msg', 'Contact is succesfully created!')
+            res.redirect('/contact')
+        })
+     
+    }
+})
 
 //detail contact
 app.get('/contact/:phoneNumber', async (req, res) => {
-
     const contact = await Contact.findOne({phoneNumber: req.params.phoneNumber})
     res.render('detail', {
         title: 'Detail Contact',
